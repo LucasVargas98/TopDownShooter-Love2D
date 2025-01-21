@@ -12,6 +12,8 @@ function love.load()
     player.x = love.graphics.getWidth() / 2
     player.y = love.graphics.getHeight() /2
     player.speed = 180
+    player.state = 1
+    injuredTimer = 2
 
     myFont  = love.graphics.newFont(40)
 
@@ -53,12 +55,37 @@ function love.update(dt)
 
         if distanceBetween(z.x,z.y, player.x, player.y) < 30 then -- utiliza a distancia entre para verificar colisao
             for i,z in ipairs(zombies) do
+                --[[
                 zombies[i] = nil
                 gameState = 1
+                player.state = 2
                 player.x = love.graphics.getWidth()/2
                 player.y = love.graphics.getHeight()/2
+                --]]
+                -- player state 1 = normal player
+                -- player state 2 = injured player
+
+
+                if player.state == 1 then
+                    zombies[i] = nil
+                    player.state = 2
+                    player.speed = player.speed * 2
+                    injuredTimer = injuredTimer - dt
+                    
+                   
+                elseif player.state == 2 then
+                    zombies[i] = nil
+                    player.state = 1
+                    player.speed = 180
+                    gameState = 1
+                    player.x = love.graphics.getWidth()/2
+                    player.y = love.graphics.getHeight()/2
+
+                end
             end
         end
+        
+
     end
 
     for i, b in ipairs(bullets) do 
@@ -110,6 +137,7 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.setColor(1,1,1)
     love.graphics.draw(sprites.background, 0, 0)
 
     if gameState == 1 then
@@ -117,8 +145,7 @@ function love.draw()
         love.graphics.printf("Click anywhere to begin!", 0, 50, love.graphics.getWidth(),"center")
     end
     love.graphics.printf("Score: " .. score, 0, love.graphics.getHeight() - 100, love.graphics.getWidth(), "center")
-
-    love.graphics.draw(sprites.player, player.x,player.y, playerMouseAngle() ,nil, nil, sprites.player:getWidth()/2, sprites.player:getHeight()/2)
+    love.graphics.printf("Player.State: " .. player.state,0, love.graphics.getHeight() - 200, love.graphics.getWidth(), "center")
 
     for i,z in ipairs(zombies)do 
         love.graphics.draw(sprites.zombie, z.x, z.y, zombiePlayerAngle(z), nil, nil, sprites.zombie:getWidth()/2, sprites.zombie:getHeight()/2)
@@ -127,6 +154,16 @@ function love.draw()
     for i, b in ipairs(bullets) do --iterador que vai gerar o projetil conforme pressionar o botao
         love.graphics.draw(sprites.bullet, b.x, b.y, nil, 0.5, nil, sprites.bullet:getWidth()/2, sprites.zombie:getHeight()/2)
     end
+
+    if player.state == 1 then
+        love.graphics.setColor(1,1,1)
+        love.graphics.draw(sprites.player, player.x,player.y, playerMouseAngle() ,nil, nil, sprites.player:getWidth()/2, sprites.player:getHeight()/2)
+
+    elseif player.state == 2 then
+        love.graphics.setColor(1,0,0)
+        love.graphics.draw(sprites.player, player.x,player.y, playerMouseAngle() ,nil, nil, sprites.player:getWidth()/2, sprites.player:getHeight()/2)
+    end
+
 
     
 end
